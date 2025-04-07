@@ -36,6 +36,7 @@ from contextlib import asynccontextmanager
 from typing import Any
 from urllib.parse import quote
 from uuid import UUID, uuid4
+import os
 
 import anyio
 from anyio.streams.memory import MemoryObjectReceiveStream, MemoryObjectSendStream
@@ -97,7 +98,8 @@ class SseServerTransport:
 
         session_id = uuid4()
         session_uri = f"{quote(self._endpoint)}?session_id={session_id.hex}"
-        session_full_url = f"{self._base_path}{session_uri}"
+        # join the base path and endpoint
+        session_full_url = os.path.join(self._base_path, session_uri.replace("$/", ""))
         self._read_stream_writers[session_id] = read_stream_writer
         logger.debug(f"Created new session with ID: {session_id}")
 
