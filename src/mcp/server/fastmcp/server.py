@@ -497,7 +497,8 @@ class FastMCP:
             debug=self.settings.debug,
             routes=[
                 Route(self.settings.sse_path, endpoint=handle_sse),
-                Mount(self.settings.message_path, app=sse.handle_post_message),
+                # Mount(self.settings.message_path, app=sse.handle_post_message),
+                Mount("/messages/", app=sse.handle_post_message),
             ],
         )
 
