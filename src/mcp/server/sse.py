@@ -67,7 +67,7 @@ class SseServerTransport:
         UUID, MemoryObjectSendStream[types.JSONRPCMessage | Exception]
     ]
 
-    def __init__(self, endpoint: str) -> None:
+    def __init__(self, endpoint: str, base_path: str) -> None:
         """
         Creates a new SSE server transport, which will direct the client to POST
         messages to the relative or absolute URL given.
@@ -75,6 +75,7 @@ class SseServerTransport:
 
         super().__init__()
         self._endpoint = endpoint
+        self._base_path = base_path
         self._read_stream_writers = {}
         logger.debug(f"SseServerTransport initialized with endpoint: {endpoint}")
 
@@ -96,6 +97,7 @@ class SseServerTransport:
 
         session_id = uuid4()
         session_uri = f"{quote(self._endpoint)}?session_id={session_id.hex}"
+        session_full_url = f"{self._base_path}{session_uri}"
         self._read_stream_writers[session_id] = read_stream_writer
         logger.debug(f"Created new session with ID: {session_id}")
 
@@ -106,8 +108,8 @@ class SseServerTransport:
         async def sse_writer():
             logger.debug("Starting SSE writer")
             async with sse_stream_writer, write_stream_reader:
-                await sse_stream_writer.send({"event": "endpoint", "data": session_uri})
-                logger.debug(f"Sent endpoint event: {session_uri}")
+                await sse_stream_writer.send({"event": "endpoint", "data": session_full_url})
+                logger.debug(f"Sent endpoint event: {session_full_url}")
 
                 async for message in write_stream_reader:
                     logger.debug(f"Sending message via SSE: {message}")
